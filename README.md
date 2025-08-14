@@ -1,7 +1,5 @@
 # SENTIMENT-ANALYSIS-OF-PATIENT-FEEDBACK-USING-NLP
 
-# Sentiment Analysis of Patient Feedback
-
 This project is a **Natural Language Processing (NLP)** application that analyzes hospital or clinic patient feedback to determine its sentiment as **Positive, Negative, or Neutral**.  
 It is built using **Python**, **Flask**, **NLTK's VADER Sentiment Analyzer**, and visualization libraries to make insights easy to understand.
 

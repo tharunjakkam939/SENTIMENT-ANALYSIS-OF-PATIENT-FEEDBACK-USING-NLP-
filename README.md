@@ -71,7 +71,7 @@ project-folder/
    
 
    Open the browser at **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**
-   ![image alt]()
+   ![image alt]("C:\Users\tharu\OneDrive\Pictures\Screenshots\nlp1.png")
 
 
 

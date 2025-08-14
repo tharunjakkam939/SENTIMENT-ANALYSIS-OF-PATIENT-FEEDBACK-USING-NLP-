@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Feedback Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <header class="header">
+        <div class="container">
+            <h1 class="title">
+                <i class="fas fa-heartbeat"></i>
+                Patient Feedback Sentiment Analysis
+            </h1>
+            <p class="subtitle">Analyze healthcare feedback using advanced NLP techniques</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Analysis Section -->
+            <section class="analysis-section">
+                <div class="card feedback-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-comments"></i> Patient Feedback Analysis</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="feedbackForm">
+                            <div class="input-group">
+                                <label for="feedbackText">Enter Patient Feedback:</label>
+                                <textarea 
+                                    id="feedbackText" 
+                                    placeholder="e.g., The doctor was very professional and the treatment was excellent. I felt well cared for during my visit."
+                                    rows="4"
+                                    required
+                                ></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-analyze">
+                                <i class="fas fa-brain"></i>
+                                Analyze Sentiment
+                            </button>
+                        </form>
+                        
+                        <div id="loadingSpinner" class="loading-spinner hidden">
+                            <div class="spinner"></div>
+                            <p>Analyzing feedback...</p>
+                        </div>
+                        
+                        <div id="analysisResult" class="analysis-result hidden"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Statistics Dashboard -->
+            <section class="dashboard-section">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Analytics Dashboard
+                </h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card total-feedback">
+                        <div class="stat-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Feedback</h3>
+                            <span class="stat-number" id="totalFeedback">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card positive-feedback">
+                        <div class="stat-icon">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Positive</h3>
+                            <span class="stat-number" id="positiveFeedback">0</span>
+                            <span class="stat-percentage" id="positivePercentage">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card negative-feedback">
+                        <div class="stat-icon">
+                            <i class="fas fa-frown"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Negative</h3>
+                            <span class="stat-number" id="negativeFeedback">0</span>
+                            <span class="stat-percentage" id="negativePercentage">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card neutral-feedback">
+                        <div class="stat-icon">
+                            <i class="fas fa-meh"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Neutral</h3>
+                            <span class="stat-number" id="neutralFeedback">0</span>
+                            <span class="stat-percentage" id="neutralPercentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="history-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Feedback History
+                    </h2>
+                    <button id="refreshHistory" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+                
+                <div id="historyContainer" class="history-container">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No feedback analyzed yet. Start by entering some patient feedback above!</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Healthcare Sentiment Analysis System. Powered by Advanced NLP.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let isAnalyzing = false;
+
+        // DOM Elements
+        const feedbackForm = document.getElementById('feedbackForm');
+        const feedbackText = document.getElementById('feedbackText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const analysisResult = document.getElementById('analysisResult');
+        const historyContainer = document.getElementById('historyContainer');
+        const refreshButton = document.getElementById('refreshHistory');
+
+        // Event Listeners
+        feedbackForm.addEventListener('submit', handleFeedbackSubmission);
+        refreshButton.addEventListener('click', loadHistory);
+
+        // Handle form submission
+        async function handleFeedbackSubmission(e) {
+            e.preventDefault();
+            
+            if (isAnalyzing) return;
+            
+            const feedback = feedbackText.value.trim();
+            if (!feedback) {
+                showError('Please enter some feedback text.');
+                return;
+            }
+
+            isAnalyzing = true;
+            showLoading();
+            hideResult();
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ feedback })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAnalysisResult(feedback, data.analysis);
+                    loadStatistics();
+                    loadHistory();
+                    feedbackText.value = '';
+                } else {
+                    showError(data.error || 'Analysis failed');
+                }
+            } catch (error) {
+                showError('Network error occurred. Please try again.');
+            } finally {
+                isAnalyzing = false;
+                hideLoading();
+            }
+        }
+
+        // Show loading spinner
+        function showLoading() {
+            loadingSpinner.classList.remove('hidden');
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Show analysis result
+        function showAnalysisResult(feedback, analysis) {
+            const confidence = Math.round(analysis.confidence * 100);
+            const keyPhrases = analysis.key_phrases.length ? 
+                analysis.key_phrases.join(', ') : 'No key phrases detected';
+
+            analysisResult.innerHTML = `
+                <div class="result-card" style="border-left-color: ${analysis.color}">
+                    <div class="result-header">
+                        <h3>Analysis Result</h3>
+                        <span class="timestamp">${analysis.timestamp}</span>
+                    </div>
+                    
+                    <div class="result-body">
+                        <div class="feedback-text">
+                            <strong>Feedback:</strong>
+                            <p>"${feedback}"</p>
+                        </div>
+                        
+                        <div class="sentiment-info">
+                            <div class="sentiment-badge" style="background-color: ${analysis.color}">
+                                ${getSentimentIcon(analysis.sentiment)} ${analysis.sentiment}
+                            </div>
+                            <div class="confidence-score">
+                                Confidence: ${confidence}%
+                            </div>
+                        </div>
+                        
+                        <div class="sentiment-scores">
+                            <h4>Detailed Scores:</h4>
+                            <div class="score-bars">
+                                <div class="score-bar">
+                                    <span>Positive</span>
+                                    <div class="bar">
+                                        <div class="fill positive" style="width: ${analysis.scores.positive * 100}%"></div>
+                                    </div>
+                                    <span>${Math.round(analysis.scores.positive * 100)}%</span>
+                                </div>
+                                <div class="score-bar">
+                                    <span>Negative</span>
+                                    <div class="bar">
+                                        <div class="fill negative" style="width: ${analysis.scores.negative * 100}%"></div>
+                                    </div>
+                                    <span>${Math.round(analysis.scores.negative * 100)}%</span>
+                                </div>
+                                <div class="score-bar">
+                                    <span>Neutral</span>
+                                    <div class="bar">
+                                        <div class="fill neutral" style="width: ${analysis.scores.neutral * 100}%"></div>
+                                    </div>
+                                    <span>${Math.round(analysis.scores.neutral * 100)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="key-phrases">
+                            <h4>Key Phrases:</h4>
+                            <p>${keyPhrases}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            analysisResult.classList.remove('hidden');
+            analysisResult.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Hide analysis result
+        function hideResult() {
+            analysisResult.classList.add('hidden');
+        }
+
+        // Show error message
+        function showError(message) {
+            analysisResult.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+            analysisResult.classList.remove('hidden');
+        }
+
+        // Get sentiment icon
+        function getSentimentIcon(sentiment) {
+            switch (sentiment) {
+                case 'Positive':
+                    return '<i class="fas fa-smile"></i>';
+                case 'Negative':
+                    return '<i class="fas fa-frown"></i>';
+                default:
+                    return '<i class="fas fa-meh"></i>';
+            }
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/statistics');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatistics(data.statistics);
+                }
+            } catch (error) {
+                console.error('Failed to load statistics:', error);
+            }
+        }
+
+        // Update statistics display
+        function updateStatistics(stats) {
+            document.getElementById('totalFeedback').textContent = stats.total_feedback;
+            document.getElementById('positiveFeedback').textContent = stats.positive_count;
+            document.getElementById('negativeFeedback').textContent = stats.negative_count;
+            document.getElementById('neutralFeedback').textContent = stats.neutral_count;
+            document.getElementById('positivePercentage').textContent = `${stats.positive_percentage}%`;
+            document.getElementById('negativePercentage').textContent = `${stats.negative_percentage}%`;
+            document.getElementById('neutralPercentage').textContent = `${stats.neutral_percentage}%`;
+        }
+
+        // Load history
+        async function loadHistory() {
+            try {
+                const response = await fetch('/history');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayHistory(data.history);
+                    updateStatistics(data.statistics);
+                }
+            } catch (error) {
+                console.error('Failed to load history:', error);
+            }
+        }
+
+        // Display history
+        function displayHistory(history) {
+            if (history.length === 0) {
+                historyContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No feedback analyzed yet. Start by entering some patient feedback above!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const historyHTML = history
+                .slice()
+                .reverse()
+                .map(entry => `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span class="history-id">#${entry.id}</span>
+                            <span class="sentiment-badge small" style="background-color: ${entry.analysis.color}">
+                                ${getSentimentIcon(entry.analysis.sentiment)} ${entry.analysis.sentiment}
+                            </span>
+                            <span class="history-timestamp">${entry.analysis.timestamp}</span>
+                        </div>
+                        <div class="history-feedback">
+                            "${entry.feedback}"
+                        </div>
+                        <div class="history-details">
+                            <span>Confidence: ${Math.round(entry.analysis.confidence * 100)}%</span>
+                            ${entry.analysis.key_phrases.length ? 
+                                `<span>Key phrases: ${entry.analysis.key_phrases.join(', ')}</span>` : 
+                                ''
+                            }
+                        </div>
+                    </div>
+                `).join('');
+
+            historyContainer.innerHTML = historyHTML;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStatistics();
+            loadHistory();
+        });
+    </script>
+</body>
+</html>

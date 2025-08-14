@@ -30,8 +30,6 @@ It is built using **Python**, **Flask**, **NLTK's VADER Sentiment Analyzer**, an
 
 📂 Project Structure
 
-
-
 project-folder/
 ├── app.py                # Main Flask application
 ├── requirements.txt      # Python dependencies
@@ -48,9 +46,9 @@ project-folder/
 🚀 Installation & Usage
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
-   cd <repo-name>
+
+   git clone https://github.com/<tharunjakkam939>/<SENTIMENT-ANALYSIS-OF-PATIENT-FEEDBACK-USING-NLP>.git
+   cd <SENTIMENT-ANALYSIS-OF-PATIENT-FEEDBACK-USING-NLP>
 
 2. **Create a virtual environment (optional but recommended)**
 
@@ -105,7 +103,7 @@ This project is for **educational purposes** and is not intended for production 
 **Tharun Jakkam**
 
 * GitHub: [tharunjakkam939](https://github.com/<your-username>)
-* LinkedIn: [](https://linkedin.com/in/<your-linkedin>)
+* LinkedIn: [https://www.linkedin.com/in/tharun-jakkam-123733336/](https://linkedin.com/in/<your-linkedin>)
 
 
 

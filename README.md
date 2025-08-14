@@ -71,7 +71,7 @@ project-folder/
    
 
    Open the browser at **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**
-   ![image alt]("C:\Users\tharu\OneDrive\Pictures\Screenshots\nlp1.png")
+   ![image alt](https://github.com/tharunjakkam939/SENTIMENT-ANALYSIS-OF-PATIENT-FEEDBACK-USING-NLP-/blob/ab89bc49dc4799cdccc2228d0a714546971cba31/outputs/nlp1.png)
 
 
 
